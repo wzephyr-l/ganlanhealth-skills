@@ -110,29 +110,25 @@ curl -s "http://localhost:3456/close?target=<TARGET_ID>"
 
 ### Step 4: 封面图生成
 
-调用 `ganlanhealthy-wechat-cover-prompt-generator` Skill：
-- 传入文章标题、摘要和**当前使用的品牌名称**（从 Step 3 获取）
-- 封面生成器根据品牌名称选用对应的配色方案
-- 生成封面图提示词 → 调用火山引擎生成图片 → 上传到微信
+**与 `ganlanhealth-publish` Skill 的 Step 3 完全相同。**
+
+包括：3.1 生成提示词 → 3.2 询问是否代为生成 → 3.3 检查生图配置 → 3.4 生成图片 → 3.5 上传微信。详细流程参见 `ganlanhealth-publish` Skill 的 Step 3。
 
 ### Step 5: 确认发布目标公众号
 
-**与 `ganlanhealth-publish` Step 4 完全相同：**
+**与 `ganlanhealth-publish` Skill 的 Step 4 完全相同。**
 
-1. 读取 `~/.config/md2wechat/wechat-accounts.json`
-2. 列出已配置的公众号供选择
-3. 如果选择「添加新公众号」，友好引导用户获取 AppID/AppSecret，验证后保存
-4. 确认目标公众号
-
-> 详细流程参见 `ganlanhealth-publish` Skill 的 Step 4。
+详细流程参见 `ganlanhealth-publish` Skill 的 Step 4。
 
 ### Step 6: 创建公众号草稿
 
-**与 `ganlanhealth-publish` Step 5 完全相同。**
+**与 `ganlanhealth-publish` Skill 的 Step 5 完全相同（含 5.0 封面图检查阻断）。**
+
+详细流程参见 `ganlanhealth-publish` Skill 的 Step 5。
 
 ### Step 7: 自检
 
-**与 `ganlanhealth-publish` Step 6 完全相同。**
+**与 `ganlanhealth-publish` Skill 的 Step 6 完全相同。**
 
 ### Step 8: 通知用户
 

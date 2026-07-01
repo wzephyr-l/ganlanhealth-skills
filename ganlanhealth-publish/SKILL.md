@@ -80,14 +80,59 @@ ls ~/.config/md2wechat/brands/ 2>/dev/null
 - 封面生成器根据品牌名称选用对应的配色方案
 - 获取封面图提示词
 
-**3.2 生成图片**
-调用火山引擎文生图：
-- 模型：`doubao-seedream-4-5` 或 `doubao-seedream-5-0-lite`
-- 使用上一步的提示词
-- 图片尺寸：微信封面标准（900×383 或 2.35:1 比例）
+**3.2 询问用户是否代为生成封面图**
+
+使用 `AskUserQuestion` 工具：
+
+> **"封面图提示词已生成，是否需要我帮你生成封面图？"**
+
+| 选项 | 说明 |
+|------|------|
+| `✅ 是，帮我生成（默认用豆包 doubao-seedream）` | 进入 3.3 检查配置 |
+| `📋 把提示词发给我，我找其他 AI 做了再提供` | 将提示词完整展示给用户 |
+
+- 用户选「是，帮我生成」→ 进入 3.3
+- 用户选「把提示词发给我」→ 将提示词完整输出，记录 `cover_status: "pending_user"`，跳过 3.3-3.5，后续 Step 5 创建草稿时阻断提醒
+
+**3.3 检查生图模型配置**
+
+```bash
+md2wechat config show --format json | grep image_api_key
+```
+
+- ✅ 已配置 → 进入 3.4 生图
+- ❌ 未配置 → 展示引导：
+
+```
+🎨 默认使用豆包模型（doubao-seedream），新用户有 250 张免费额度。
+
+开通步骤：
+
+1️⃣  开通模型服务
+   https://console.volcengine.com/ark/region:cn-beijing/openManagement?COMPUTER_VISION=%7B%7D&advancedActiveKey=model&tab=ComputerVision
+   勾选 doubao-seedream-4-5 和 doubao-seedream-5-0-lite-260128
+
+2️⃣  创建 API Key
+   https://console.volcengine.com/ark/region:cn-beijing/apiKey?apikey=%7B%7D
+   创建后将 Key 告诉我
+
+3️⃣  保存配置
+   收到 Key 后，我帮你保存到本地配置
+   🔒 Key 仅存本地（~/.config/md2wechat/config.yaml），不上传任何云端服务
+```
+
+等用户提供 Key 后继续 3.4。
+
+**3.4 生成图片**
+
+调用火山引擎文生图 API（使用 md2wechat config 中配置的 image_api_key）：
+- 模型：`doubao-seedream-4-5` 或 `doubao-seedream-5-0-lite-260128`
+- 使用 3.1 生成的提示词
+- 图片尺寸：微信封面标准（900×383，比例 2.35:1）
 - 输出：保存为 PNG 文件
 
-**3.3 上传到微信**
+**3.5 上传到微信**
+
 ```bash
 # 获取 access_token（使用确认后的公众号凭据）
 curl "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=APPID&secret=APPSECRET"
@@ -293,6 +338,22 @@ cat ~/.config/md2wechat/wechat-accounts.json
 ### Step 5: 创建公众号草稿
 
 > 使用 Step 4 确认的公众号凭据。
+
+**5.0 检查封面图**
+
+```
+├── ✅ 已有 thumb_media_id（Step 3 生成/上传成功）→ 继续 5.1
+└── ❌ 无封面图（用户选了"找其他 AI 做"）
+       → 告知用户：
+         "创建公众号草稿需要封面图。请提供封面图片（可以直接发图给我），
+          我来帮你上传到微信。
+
+          之前生成的封面提示词供参考：
+          ---
+          [3.1 生成的提示词内容]
+          ---"
+       → 等待用户提供图片 → 上传微信 add_material?type=thumb → 获取 thumb_media_id → 继续 5.1
+```
 
 **5.1 准备参数**
 ```
